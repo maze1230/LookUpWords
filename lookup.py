@@ -117,9 +117,10 @@ def synonym(name):
                 continue
             res.append((s, ','.join(meaning_fast(s, 50))))
             cnt += 1
-            if cnt >= 5 or len(res) >= 20:
-                break
             print(len(res), end=', ', flush=True)
-        if len(res) >= 20:
+            if cnt >= 5 or len(res) >= 15:
+                break
+        if len(res) >= 15:
             break
+    print()
     return res
