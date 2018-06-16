@@ -13,7 +13,8 @@ synonym_API_id = None
 
 def take_from_json(arg, cond, key=None):
     res = []
-    if cond(arg, key): res.append(arg)
+    if cond(arg, key):
+        res.append(arg)
     if isinstance(arg, list):
         for item in arg:
             res += take_from_json(item, cond)
@@ -91,7 +92,8 @@ def sentence(name, lim=1000):
     }
     response = json.loads(requests.get(url, params=param).text)
     response = take_from_json(response, is_example)[0]
-    response = [(x["first"], re.sub(r"　 ", "", x["second"])) for x in response if len(x["first"]) <= lim]
+    response = [(x["first"], re.sub(r"　 ", "", x["second"])) for x in response
+                if len(x["first"]) <= lim]
     return response
 
 
@@ -117,7 +119,7 @@ def synonym(name):
             cnt += 1
             if cnt >= 5 or len(res) >= 20:
                 break
-            print(len(res), end=', ')
+            print(len(res), end=', ', flush=True)
         if len(res) >= 20:
             break
     return res

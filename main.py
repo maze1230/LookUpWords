@@ -26,14 +26,14 @@ if __name__ == '__main__':
             w = word.Word(name)
             try:
                 w.mean = hl.choose_from_list(lu.meaning(name))
-                os.system('cls')
+                os.system('clear')
                 w.synonym = hl.choose_from_list(lu.synonym(name), 15)
                 w.synonym = list(map(hl.first, w.synonym))
-                os.system('cls')
+                os.system('clear')
                 w.sentence_en, w.sentence_ja = hl.choose_from_list(
                     lu.sentence(name, 150))[0]
                 csvwriter.writerow(w.to_csv())
-                os.system('cls')
+                os.system('clear')
 
             except LookupError:
                 print("There isn't this word.")

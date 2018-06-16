@@ -1,5 +1,10 @@
 class Word:
-    def __init__(self, name, mean=None, synonym=None, sentence_en=None, sentence_ja=None):
+    def __init__(self,
+                 name,
+                 mean=None,
+                 synonym=None,
+                 sentence_en=None,
+                 sentence_ja=None):
         self.name = name
         self.mean = mean
         self.synonym = synonym
