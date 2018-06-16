@@ -2,9 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
-from DictionaryServices import DCSGetTermRangeInString, DCSCopyTextDefinition
 
 meaningURL = "https://ejje.weblio.jp/content/"
+meaning_fastURL = "https://glosbe.com/gapi/translate"
+sentenceURL = "https://glosbe.com/gapi/tm"
 synonymURL = "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/"
 synonym_API_key = None
 synonym_API_id = None
@@ -12,8 +13,7 @@ synonym_API_id = None
 
 def take_from_json(arg, cond, key=None):
     res = []
-    if cond(arg, key):
-        res.append(arg)
+    if cond(arg, key): res.append(arg)
     if isinstance(arg, list):
         for item in arg:
             res += take_from_json(item, cond)
@@ -26,6 +26,16 @@ def take_from_json(arg, cond, key=None):
 def has_synonym_list(arg, key):
     if isinstance(arg, list):
         return key == "synonyms"
+
+
+def is_phrase(arg, key):
+    if isinstance(arg, dict):
+        return key == "phrase"
+
+
+def is_example(arg, key):
+    if isinstance(arg, list):
+        return key == "examples"
 
 
 def remove_tags(s):
@@ -56,8 +66,33 @@ def meaning(name, lim=1000):
 
 
 def meaning_fast(name, lim=1000):
-    nrange = DCSGetTermRangeInString(None, name, 0)
-    print(DCSCopyTextDefinition(None, name, nrange))
+    url = meaning_fastURL
+    param = {
+        "from": "eng",
+        "dest": "ja",
+        "phrase": name,
+        "format": "json",
+        "pretty": "true"
+    }
+    response = json.loads(requests.get(url, params=param).text)
+    response = take_from_json(response, is_phrase)
+    response = [x["text"] for x in response]
+    return response[:min(10, len(response))]
+
+
+def sentence(name, lim=1000):
+    url = sentenceURL
+    param = {
+        "from": "eng",
+        "dest": "ja",
+        "phrase": name,
+        "format": "json",
+        "pretty": "true"
+    }
+    response = json.loads(requests.get(url, params=param).text)
+    response = take_from_json(response, is_example)[0]
+    response = [(x["first"], re.sub(r"　 ", "", x["second"])) for x in response if len(x["first"]) <= lim]
+    return response
 
 
 def synonym(name):
@@ -78,11 +113,11 @@ def synonym(name):
                 continue
             if '-' in s or ' ' in s or s.lower() != s or s in res:
                 continue
-            res.append((s, meaning(s, 100)))
-            print(meaning_fast(s, 100))
+            res.append((s, ','.join(meaning_fast(s, 50))))
             cnt += 1
-            if cnt >= 5:
+            if cnt >= 5 or len(res) >= 20:
                 break
+            print(len(res), end=', ')
         if len(res) >= 20:
             break
     return res

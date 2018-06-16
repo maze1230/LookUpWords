@@ -12,7 +12,7 @@ def choose_from_list(list_, num=20):  # num -> max number of the item to show
     for idx, item in enumerate(list_):
         if idx >= num:
             break
-        print(str(idx) + ": " + str(item))
+        print(str(idx) + ": " + str(item), end='\n\n')
     print("Choose numbers(separate by ,) : ", end='')
     x = input_lint()
     for i in x:
