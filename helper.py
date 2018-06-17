@@ -16,7 +16,11 @@ def choose_from_list(list_, num=20):  # num -> max number of the item to show
     print("Choose numbers(separate by ,) : ", end='')
     x = input_lint()
     for i in x:
+        if i < 0 or i >= len(list_):
+            break
         ret.append(list_[i])
+    if len(ret) == 0:
+        ret.append("")
     return ret
 
 

@@ -14,5 +14,5 @@ class Word:
     def to_csv(self):
         return [
             self.name, ', '.join(self.mean), ', '.join(self.synonym),
-            ','.join(self.sentence_en), ', '.join(self.sentence_ja)
+            self.sentence_en, self.sentence_ja
         ]

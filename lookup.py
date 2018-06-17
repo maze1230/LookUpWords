@@ -4,7 +4,6 @@ import json
 import re
 
 meaningURL = "https://ejje.weblio.jp/content/"
-meaning_fastURL = "https://glosbe.com/gapi/translate"
 sentenceURL = "https://glosbe.com/gapi/tm"
 synonymURL = "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/"
 synonym_API_key = None
@@ -51,7 +50,6 @@ def remove_tags(s):
 def meaning(name, lim=1000):
     req = requests.get(meaningURL + name)
     soup = BeautifulSoup(req.text, 'lxml')
-    #  mean = soup.find_all("td", attrs={"class": "content-explanation"})
     mean = soup.find_all("p", attrs={"class": "lvlB"})
     res = []
     count_char = 0
@@ -66,18 +64,21 @@ def meaning(name, lim=1000):
 
 
 def meaning_fast(name, lim=1000):
-    url = meaning_fastURL
-    param = {
-        "from": "eng",
-        "dest": "ja",
-        "phrase": name,
-        "format": "json",
-        "pretty": "true"
-    }
-    response = json.loads(requests.get(url, params=param).text)
-    response = take_from_json(response, is_phrase)
-    response = [x["text"] for x in response]
-    return response[:min(10, len(response))]
+    req = requests.get(meaningURL + name)
+    soup = BeautifulSoup(req.text, 'lxml')
+    mean = soup.find_all("td", attrs={"class": "content-explanation"})
+    res = []
+    count_char = 0
+    for list_ in mean:
+        list_ = list_.text.split('、')
+        for x in list_:
+            if len(x) == 0:
+                continue
+            if count_char > lim:
+                break
+            res.append(x)
+            count_char += len(x)
+    return res
 
 
 def sentence(name, lim=1000):
@@ -91,8 +92,9 @@ def sentence(name, lim=1000):
     }
     response = json.loads(requests.get(url, params=param).text)
     response = take_from_json(response, is_example)[0]
-    response = [(x["first"], re.sub(r"　\s", "", x["second"])) for x in response
-                if len(x["first"]) <= lim]
+    response = [(x["first"], re.sub(r"[　\s]", "", x["second"]))
+                for x in response if len(x["first"]) <= lim]
+    response[min(len(response), 10)] = ("", "")
     return response
 
 
@@ -103,8 +105,12 @@ def synonym(name):
         "app_id": synonym_API_id,
         "app_key": synonym_API_key
     }
-    response = json.loads(requests.get(url, headers=header).text)
-    response = take_from_json(response, has_synonym_list)
+    response = requests.get(url, headers=header).text
+    try:
+        response = json.loads(response)
+        response = take_from_json(response, has_synonym_list)
+    except json.decoder.JSONDecodeError:
+        return [' ']
     res = []
     for x in response:
         cnt = 0
