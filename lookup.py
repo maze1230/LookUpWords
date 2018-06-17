@@ -45,7 +45,6 @@ def remove_tags(s):
         if not isinstance(x.string, str):
             continue
         res += x.string
-    print(res)
     return res
 
 
@@ -92,7 +91,7 @@ def sentence(name, lim=1000):
     }
     response = json.loads(requests.get(url, params=param).text)
     response = take_from_json(response, is_example)[0]
-    response = [(x["first"], re.sub(r"　 ", "", x["second"])) for x in response
+    response = [(x["first"], re.sub(r"　\s", "", x["second"])) for x in response
                 if len(x["first"]) <= lim]
     return response
 
