@@ -28,13 +28,17 @@ if __name__ == '__main__':
             w = word.Word(name)
             try:
                 try:
-                    w.mean = hl.choose_from_list(lu.meaning(name))
+                    w.mean = hl.choose_from_list(
+                        lu.meaning(name) + lu.meaning_fast(name))
+
                 except LookupError:
                     w.mean = hl.choose_from_list(lu.meaning_fast(name))
+                    print(w.mean)
 
+                finally:
                     os.system('clear')
                     w.synonym = hl.choose_from_list(lu.synonym(name), 15)
-                    w.synonym = list(map(hl.first, w.synonym))
+                    # w.synonym = list(map(hl.first, w.synonym))
                     os.system('clear')
                     w.sentence_en, w.sentence_ja = hl.choose_from_list(
                         lu.sentence(name, 150))[0]

@@ -4,7 +4,7 @@ import json
 import re
 
 meaningURL = "https://ejje.weblio.jp/content/"
-sentenceURL = "https://glosbe.com/gapi/tm"
+sentenceURL = "https://ejje.weblio.jp/sentence/content/"
 synonymURL = "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/"
 synonym_API_key = None
 synonym_API_id = None
@@ -81,21 +81,41 @@ def meaning_fast(name, lim=1000):
     return res
 
 
+# def sentence(name, lim=1000):
+#     url = sentenceURL
+#     param = {
+#         "from": "eng",
+#         "dest": "ja",
+#         "phrase": name,
+#         "format": "json",
+#         "pretty": "true"
+#     }
+#     response = json.loads(requests.get(url, params=param).text)
+#     response = take_from_json(response, is_example)[0]
+#     response = [(x["first"], re.sub(r"[　\s]", "", x["second"]))
+#                 for x in response if len(x["first"]) <= lim]
+#     response[min(len(response), 10)] = ("", "")
+#     return response
+
+
 def sentence(name, lim=1000):
-    url = sentenceURL
-    param = {
-        "from": "eng",
-        "dest": "ja",
-        "phrase": name,
-        "format": "json",
-        "pretty": "true"
-    }
-    response = json.loads(requests.get(url, params=param).text)
-    response = take_from_json(response, is_example)[0]
-    response = [(x["first"], re.sub(r"[　\s]", "", x["second"]))
-                for x in response if len(x["first"]) <= lim]
-    response[min(len(response), 10)] = ("", "")
-    return response
+    req = requests.get(sentenceURL + name)
+    soup = BeautifulSoup(req.text, 'lxml')
+    sen_en = soup.find_all("p", attrs={"class": "qotCE"})
+    sen_ja = soup.find_all("p", attrs={"class": "qotCJ"})
+    res = []
+    for i in range(len(sen_en)):
+        sen, sja = sen_en[i], sen_ja[i].text
+        sen = re.sub(r"AVOID_CROSSLINK|例文帳に追加", "", remove_tags(sen))
+        idx = sja.find("\xa0")
+        if idx != -1:
+            sja = sja[:idx]
+        if 30 <= len(sen) and len(sen) <= lim:
+            res.append((sen, sja))
+
+    res = res[:min(20, len(res))]
+    res.append(("", ""))
+    return res
 
 
 def synonym(name):
@@ -128,4 +148,6 @@ def synonym(name):
         if len(res) >= 15:
             break
     print()
+    if len(res) == 0:
+        res.append(" ")
     return res

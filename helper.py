@@ -13,11 +13,14 @@ def choose_from_list(list_, num=20):  # num -> max number of the item to show
         if idx >= num:
             break
         print(str(idx) + ": " + str(item), end='\n\n')
-    print("Choose numbers(separate by ,) : ", end='')
+    print("Choose numbers(separate by ,)(to input by yourself, -1) : ", end='')
     x = input_lint()
     for i in x:
-        if i < 0 or i >= len(list_):
+        if i >= len(list_):
             break
+        if i == -1:
+            ret.append(input("please input -> "))
+            continue
         ret.append(list_[i])
     if len(ret) == 0:
         ret.append("")
